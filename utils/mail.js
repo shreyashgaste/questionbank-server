@@ -11,20 +11,20 @@ exports.generateOTP = () => {
 };
 
 exports.mailTransport = () =>
-  nodemailer.createTransport({
-    host: "smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-      user: process.env.MAILTRAP_USERNAME,
-      pass: process.env.MAILTRAP_PASSWORD,
-      // api_key: process.env.SENDGRID_API_KEY
-    },
-    // nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //       user: process.env.USER,
-    //       pass: process.env.PASS
-    //   }
+  // nodemailer.createTransport({
+    // host: "smtp.mailtrap.io",
+    // port: 2525,
+    // auth: {
+    //   user: process.env.MAILTRAP_USERNAME,
+    //   pass: process.env.MAILTRAP_PASSWORD,
+    //   // api_key: process.env.SENDGRID_API_KEY
+    // },
+    nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+          user: process.env.USER,
+          pass: process.env.PASS
+      }
   });
   // }));
 
