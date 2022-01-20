@@ -20,7 +20,9 @@ exports.mailTransport = () =>
     //   // api_key: process.env.SENDGRID_API_KEY
     // },
     nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      protocol: tls, 
       auth: {
           user: process.env.USER,
           pass: process.env.PASS
