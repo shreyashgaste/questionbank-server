@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const sendgridTransport = require('nodemailer-sendgrid-transport');
+const nodeMailgun = require('nodemailer-mailgun-transport');
 
 exports.generateOTP = () => {
   let otp = "";
@@ -10,6 +11,7 @@ exports.generateOTP = () => {
   return otp;
 };
 
+
 exports.mailTransport = () =>
   // nodemailer.createTransport({
     // host: "smtp.mailtrap.io",
@@ -19,14 +21,20 @@ exports.mailTransport = () =>
     //   pass: process.env.MAILTRAP_PASSWORD,
     //   // api_key: process.env.SENDGRID_API_KEY
     // },
-    nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      protocol: tls, 
-      auth: {
-          user: process.env.USER,
-          pass: process.env.PASS
-      }
+    // nodemailer.createTransport({
+      // host: "smtp.gmail.com",
+      // port: 587,
+      // protocol: tls, 
+      // auth: {
+      //     user: process.env.USER,
+      //     pass: process.env.PASS
+      // }
+
+      nodemailer.createTransport( nodeMailgun, {
+        auth: {
+          api_key: process.env.MAILGUN_API_KEY, 
+          domain: process.env.MAILGUN_DOMAIN
+        }
   });
   // }));
 
