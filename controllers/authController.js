@@ -183,6 +183,7 @@ module.exports.forgotPassword_post = async (req, res) => {
       message: "Password reset link is sent to your email.",
     });
   } catch (error) {
+    console.log(error);
     res.json(error);
   }
 };
