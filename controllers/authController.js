@@ -611,6 +611,7 @@ module.exports.getquizquestions_post = async (req, res) => {
   const { quizId } = req.body;
   try {
     const d = await Result.findOne({
+      quizId,
       scores: { $elemMatch: { prn: user.phone } },
     });
     if (d) return res.json({ error: "Already attempted the quiz!" });
