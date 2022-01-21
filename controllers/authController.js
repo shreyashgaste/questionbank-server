@@ -175,6 +175,7 @@ module.exports.forgotPassword_post = async (req, res) => {
       subject: "Password Reset",
       html: generatePasswordResetTemplate(
         `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
+        // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
       ),
     });
 

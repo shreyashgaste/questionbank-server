@@ -1,42 +1,42 @@
 const nodemailer = require("nodemailer");
-const sendgridTransport = require('nodemailer-sendgrid-transport');
-const nodeMailgun = require('nodemailer-mailgun-transport');
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+const nodeMailgun = require("nodemailer-mailgun-transport");
 
 exports.generateOTP = () => {
   let otp = "";
   for (let i = 0; i <= 3; i++) {
-    const randVal = Math.floor(Math.random() * 9) + 1; 
+    const randVal = Math.floor(Math.random() * 9) + 1;
     otp = otp + randVal;
   }
   return otp;
 };
 
-
+var auth = {
+  auth: {
+    api_key: process.env.MAILGUN_API_KEY,
+    domain: process.env.MAILGUN_DOMAIN,
+  },
+};
 exports.mailTransport = () =>
   // nodemailer.createTransport({
-    // host: "smtp.mailtrap.io",
-    // port: 2525,
-    // auth: {
-    //   user: process.env.MAILTRAP_USERNAME,
-    //   pass: process.env.MAILTRAP_PASSWORD,
-    //   // api_key: process.env.SENDGRID_API_KEY
-    // },
-    // nodemailer.createTransport({
-      // host: "smtp.gmail.com",
-      // port: 587,
-      // protocol: tls, 
-      // auth: {
-      //     user: process.env.USER,
-      //     pass: process.env.PASS
-      // }
+  // host: "smtp.mailtrap.io",
+  // port: 2525,
+  // auth: {
+  //   user: process.env.MAILTRAP_USERNAME,
+  //   pass: process.env.MAILTRAP_PASSWORD,
+  //   // api_key: process.env.SENDGRID_API_KEY
+  // },
+  // nodemailer.createTransport({
+  // host: "smtp.gmail.com",
+  // port: 587,
+  // protocol: tls,
+  // auth: {
+  //     user: process.env.USER,
+  //     pass: process.env.PASS
+  // }
 
-      nodemailer.createTransport( nodeMailgun, {
-        auth: {
-          api_key: process.env.MAILGUN_API_KEY, 
-          domain: process.env.MAILGUN_DOMAIN
-        }
-  });
-  // }));
+  nodemailer.createTransport(nodeMailgun(auth));
+// }));
 
 exports.generateEmailTemplate = (code, name) => {
   return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -421,7 +421,7 @@ exports.generateEmailTemplate = (code, name) => {
 };
 
 exports.plainEmailTemplate = (name, message) => {
-    return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
     <head>
     <!--[if gte mso 9]>
@@ -835,11 +835,11 @@ exports.plainEmailTemplate = (name, message) => {
     </body>
     
     </html>
-    `
-}
+    `;
+};
 
-exports.generatePasswordResetTemplate = url => {
-    return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+exports.generatePasswordResetTemplate = (url) => {
+  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
     <head>
     <!--[if gte mso 9]>
@@ -1234,6 +1234,5 @@ exports.generatePasswordResetTemplate = url => {
     </body>
     
     </html>
-    `
-}
-
+    `;
+};
