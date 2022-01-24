@@ -22,6 +22,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter this field"]
   },
+  yearOfStudy: {
+    type: String
+  },
   password: {
     type: String,
     required: [true, "Please enter a password"],

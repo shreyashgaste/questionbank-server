@@ -9,6 +9,10 @@ const quizSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter the subject name"],
   },
+  year: {
+    type: String,
+    require: true
+  },
   email: {
     type: String,
     require: true,

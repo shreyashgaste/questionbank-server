@@ -18,14 +18,14 @@ var auth = {
   },
 };
 exports.mailTransport = () =>
-  // nodemailer.createTransport({
-  // host: "smtp.mailtrap.io",
-  // port: 2525,
-  // auth: {
-  //   user: process.env.MAILTRAP_USERNAME,
-  //   pass: process.env.MAILTRAP_PASSWORD,
-  //   // api_key: process.env.SENDGRID_API_KEY
-  // },
+  nodemailer.createTransport({
+  host: "smtp.mailtrap.io",
+  port: 2525,
+  auth: {
+    user: process.env.MAILTRAP_USERNAME,
+    pass: process.env.MAILTRAP_PASSWORD,
+    // api_key: process.env.SENDGRID_API_KEY
+  },
   // nodemailer.createTransport({
   // host: "smtp.gmail.com",
   // port: 587,
@@ -35,8 +35,8 @@ exports.mailTransport = () =>
   //     pass: process.env.PASS
   // }
 
-  nodemailer.createTransport(nodeMailgun(auth));
-// }));
+  // nodemailer.createTransport(nodeMailgun(auth));
+});
 
 exports.generateEmailTemplate = (code, name) => {
   return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

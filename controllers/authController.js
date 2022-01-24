@@ -60,7 +60,7 @@ const createToken = (userId) => {
 // controller actions
 
 module.exports.signup_post = async (req, res) => {
-  const { name, email, phone, work, password, role } = req.body;
+  const { name, email, phone, work, password, role, yearOfStudy } = req.body;
   if (!name || !email || !phone || !work || !password || !role)
     return res.json({ error: "Please provide all the details." });
   try {
@@ -72,7 +72,6 @@ module.exports.signup_post = async (req, res) => {
         const deleteUser = await User.findOneAndDelete({ email });
       }
     }
-
     const user = new User({
       name,
       email,
@@ -80,6 +79,7 @@ module.exports.signup_post = async (req, res) => {
       work,
       password,
       role,
+      yearOfStudy,
     });
 
     const OTP = generateOTP();
@@ -307,13 +307,14 @@ module.exports.getsubjects_post = async (req, res) => {
 
 module.exports.addquestion_post = async (req, res) => {
   const { topic, questionName, subjectName, choices, answer } = req.body;
-  if (!questionName || !subjectName || !choices || !answer)
+  if (!topic || !questionName || !subjectName || !choices || !answer)
     return res.json({ error: "Must provide all the question details" });
   try {
+    const addTopic = topic.toLowerCase();
     const subject = await Subject.findOne({ name: subjectName });
     if (!subject) return res.json({ error: "Subject is not registered" });
     const question = await Question.create({
-      topic,
+      topic: addTopic,
       questionName: { question: questionName },
       subjectName,
       choices,
@@ -331,6 +332,7 @@ module.exports.getquestions_post = async (req, res) => {
   try {
     const data = await Question.find({ subjectName });
     if (data.length == 0) return res.json({ error: "No questions added" });
+    data.reverse();
     res.status(201).json(data);
   } catch (err) {
     res.json({ error: "Server traffic error!" });
@@ -342,8 +344,13 @@ module.exports.gettopicquestions_post = async (req, res) => {
   if (!subjectName || !topic)
     return res.json({ error: "Must provide subject name." });
   try {
-    const data = await Question.find({ subjectName, topic });
+    const searchTopic = topic.toLowerCase();
+    const data = await Question.find({
+      subjectName,
+      topic: { $regex: searchTopic },
+    });
     if (data.length == 0) return res.json({ error: "No questions added" });
+    data.reverse();
     res.status(201).json(data);
   } catch (err) {
     res.json({ error: "Server traffic error!" });
@@ -462,8 +469,9 @@ module.exports.customquestion_post = async (req, res) => {
   const { title, questionId, backenddata, topic } = req.body;
   try {
     if (title === "question") {
+      const addTopic = topic.toLowerCase();
       const data = await Question.findByIdAndUpdate(questionId, {
-        topic,
+        topic: addTopic,
         questionName: { question: backenddata },
       });
       return res.status(201).json({ data, message: "Successfully added" });
@@ -520,6 +528,7 @@ module.exports.createquiz_post = async (req, res) => {
     starttime,
     endtime,
     duration,
+    year,
   } = req.body;
   if (
     !quizName ||
@@ -528,7 +537,8 @@ module.exports.createquiz_post = async (req, res) => {
     !passcode ||
     !starttime ||
     !endtime ||
-    !duration
+    !duration ||
+    !year
   )
     return res.json({ error: "Must provide all the question details" });
   try {
@@ -538,6 +548,7 @@ module.exports.createquiz_post = async (req, res) => {
     const newQuiz = await Quiz.create({
       quizName,
       subjectName,
+      year,
       email,
       passcode,
       starttime,
@@ -571,16 +582,22 @@ module.exports.getstudentquizes_get = async (req, res) => {
     return res.json({ success: false, message: "unauthorized access!" });
   try {
     const stream = user.work;
+    const yos = user.yearOfStudy;
+    console.log(yos);
     const data = await User.find({ work: stream, role: "Teacher" });
     if (data.length === 0)
       return res.json({ error: "No teachers registered with your stream." });
     let qzes = [];
     for (let i = 0; i < data.length; i++) {
-      const q = await Quiz.find({ email: data[i].email });
+      const q = await Quiz.find({
+        email: data[i].email,
+        year: { $in: [yos, "All Year"] },
+      });
       qzes = [...qzes, ...q];
     }
     res.status(201).json(qzes);
   } catch (err) {
+    console.log(err);
     res.json({ error: "Server traffic error!" });
   }
 };
@@ -610,14 +627,22 @@ module.exports.getquizquestions_post = async (req, res) => {
     return res.json({ success: false, message: "unauthorized access!" });
   const { quizId } = req.body;
   try {
-    const d = await Result.findOne({
-      quizId,
-      scores: { $elemMatch: { prn: user.phone } },
-    });
-    if (d) return res.json({ error: "Already attempted the quiz!" });
     const quiz = await Quiz.findById(quizId);
     if (quiz.questions.length === 0)
       return res.json({ error: "No questions added" });
+    if (user.role === "Student") {
+      const d = await Result.findOne({
+        quizId,
+        scores: { $elemMatch: { prn: user.phone } },
+      });
+      if (d) return res.json({ error: "Already attempted the quiz!" });
+      const quizresult = await Result.findOne({ quizId });
+      if (!quizresult) return res.json({ error: "Something went wrong!" });
+      const setResult = await Result.findByIdAndUpdate(quizresult._id, {
+        $push: { scores: { prn: user.phone, score: "0" } },
+      });
+      if (!setResult) return res.json({ error: "Something went wrong!" });
+    }
     const data = await Question.find({ _id: { $in: quiz.questions } });
     res.status(201).json(data);
   } catch (err) {
@@ -692,9 +717,16 @@ module.exports.storeresult_post = async (req, res) => {
     }
     const quizresult = await Result.findOne({ quizId });
     if (!quizresult) return res.json({ error: "Something went wrong!" });
-    const data = await Result.findByIdAndUpdate(quizresult._id, {
-      $push: { scores: { prn: user.phone, score: userScore } },
-    });
+    // const data = await Result.findByIdAndUpdate(quizresult._id, {
+    //   $push: { scores: { prn: user.phone, score: userScore } },
+    // });
+    const data = await Result.updateOne(
+      { quizId, scores: { $elemMatch: { prn: user.phone } } },
+      {
+        $set: { "scores.$.score": userScore },
+      }
+    );
+    if (!data) return res.json({ error: "Something went wrong" });
     res.status(201).json({ message: "Exam submitted successfully" });
   } catch (err) {
     res.json({ error: "Server traffic error!" });
