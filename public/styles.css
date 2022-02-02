@@ -28,7 +28,7 @@ form h2{
 }
 form{
   width: 360px;
-  margin: 0 auto;
+  margin: 30px auto;
   padding: 30px;
   box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
   border-radius: 10px;
@@ -53,9 +53,10 @@ button{
   text-transform: uppercase;
   font-weight: 700;
   font-size: 0.8em;
-  display: block;
+  /* display: block; */
   padding: 10px 16px;
   letter-spacing: 2px;
+  /* align-self: center; */
 }
 .error{
   color: #ff0099;
@@ -93,4 +94,42 @@ footer{
   text-align: center;
   margin-top: 120px;
   color: #aaa;
+}
+.homebuttons {
+  margin-top: 10px;
+  background: #3b40d4;
+  background-image: -webkit-linear-gradient(top, #3b40d4, #025fa1);
+  background-image: -moz-linear-gradient(top, #3b40d4, #025fa1);
+  background-image: -ms-linear-gradient(top, #3b40d4, #025fa1);
+  background-image: -o-linear-gradient(top, #3b40d4, #025fa1);
+  background-image: linear-gradient(to bottom, #3b40d4, #025fa1);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  text-shadow: 1px 1px 3px #666666;
+  font-family: Georgia;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.homebuttons:hover {
+  background: #2b88c2;
+  background-image: -webkit-linear-gradient(top, #2b88c2, #2e87c2);
+  background-image: -moz-linear-gradient(top, #2b88c2, #2e87c2);
+  background-image: -ms-linear-gradient(top, #2b88c2, #2e87c2);
+  background-image: -o-linear-gradient(top, #2b88c2, #2e87c2);
+  background-image: linear-gradient(to bottom, #2b88c2, #2e87c2);
+  text-decoration: none;
+}
+
+.buttongroups {
+  align-items: center;
+  margin: auto;
+}
+
+.buttonhover {
+  cursor: pointer;
 }

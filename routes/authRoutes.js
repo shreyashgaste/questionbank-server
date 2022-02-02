@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const authController = require('../controllers/authController');
-const { checkUser } = require('../middleware/authMiddleware');
+const { checkUser, checkAdmin } = require('../middleware/authMiddleware');
 const { isResetTokenValid } = require('../middleware/resetTokenMiddleware')
 const router = Router();
 const multer = require('multer');
@@ -21,7 +21,7 @@ const uploads = multer({storage, fileFilter})
 
 router.post('/signup', authController.signup_post);
 router.post('/login', authController.login_post);
-router.get('/logout', checkUser, authController.logout_get);
+router.post('/logout', authController.logout_post);
 router.post('/addsubject', checkUser, authController.addsubject_post);
 router.post('/getsubjects', checkUser, authController.getsubjects_post);
 router.post('/addquestion', checkUser, authController.addquestion_post);
@@ -46,5 +46,16 @@ router.post('/getquizquestions', checkUser, authController.getquizquestions_post
 router.get('/getstudentquizes', checkUser, authController.getstudentquizes_get);
 router.post('/getresult', checkUser, authController.getresult_post);
 router.post('/removequiz', checkUser, authController.removequiz_post);
+router.post('/adminlogin', authController.adminlogin_post);
+router.get('/adminlogin', authController.adminlogin_get);
+router.get('/adminlogout', checkAdmin, authController.adminlogout_get);
+router.get('/firstyear', checkAdmin, authController.firstYear_get);
+router.get('/secondyear', checkAdmin, authController.secondYear_get);
+router.get('/thirdyear', checkAdmin, authController.thirdYear_get);
+router.get('/finalyear', checkAdmin, authController.finalYear_get);
+// router.get('/home', checkAdmin, authController.home_get);
+router.post('/requestUpgrade', checkUser, authController.requestUpgrade_post);
+router.post('/changeYear', checkAdmin, authController.changeYear_post);
+router.post('/declineRequest', checkAdmin, authController.declineRequest_post);
 
 module.exports = router;

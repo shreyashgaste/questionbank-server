@@ -18,6 +18,7 @@ const crypto = require("crypto");
 const { createRandomBytes } = require("../utils/commonHelper");
 const Quiz = require("../models/Quiz");
 const Result = require("../models/Result");
+const upgradeYear = require("../models/upgradeYear");
 
 // handle errors
 const handleErrors = (err) => {
@@ -25,17 +26,17 @@ const handleErrors = (err) => {
 
   // incorrect email
   if (err.message === "incorrect email") {
-    errors.email = "That email is not registered";
+    errors.email = "Email is not registered";
   }
 
   // incorrect password
   if (err.message === "incorrect password") {
-    errors.password = "That password is incorrect";
+    errors.password = "Password is incorrect";
   }
 
   // duplicate email error
   if (err.code === 11000) {
-    errors.email = "That email is already registered";
+    errors.email = "Email is already registered";
     return errors;
   }
 
@@ -121,7 +122,7 @@ module.exports.verifyEmail_post = async (req, res) => {
       return res.json({ error: "Sorry, user not found!" });
     }
 
-    const isMatched = await token.compareToken(otp);
+    const isMatched = await token.compareToken(otp.trim());
     if (!isMatched) return res.json({ error: "Please provide a valid token!" });
 
     user.verified = true;
@@ -240,7 +241,7 @@ module.exports.login_post = async (req, res) => {
     if (isexist) {
       if (!isexist.verified) {
         const deleteUser = await User.findOneAndDelete({ email });
-        return res.json({ error: "User is not registered, please sign-up!" });
+        if(deleteUser) return res.json({ error: "User is not registered, please sign-up!" });
       }
     }
 
@@ -747,19 +748,176 @@ module.exports.getresult_post = async (req, res) => {
   }
 };
 
-module.exports.logout_get = async (req, res) => {
+module.exports.logout_post = async (req, res) => {
+  const { email } = req.body;
+  if(!email) return res.json({ success: false, message: "Authorization fails" });
   if (req.headers && req.headers.authorization) {
     const token = req.headers.authorization.split(" ")[1];
+    console.log(token);
     if (!token) {
       return res.json({ success: false, message: "Authorization fails" });
     }
     try {
-      const tokens = req.user.tokens;
+      const user = await User.findOne({email});
+      if(!user) return res.json({ success: false, message: "Authorization fails" });
+
+      const tokens = user.tokens;
+      // console.log(tokens);
       const newTokens = tokens.filter((t) => t.token !== token);
-      await User.findByIdAndUpdate(req.user._id, { tokens: newTokens });
+      await User.findByIdAndUpdate(user._id, { tokens: newTokens });
       res.json({ success: true, message: "Signed-out successfully!" });
     } catch (error) {
-      res.json({ error: "Server traffic error!" });
+      console.log(error,"hi");
+      res.json({ message: "Server traffic error!" });
     }
   }
+};
+
+module.exports.adminlogin_post = async (req, res) => {
+  const { email, password } = req.body;
+  console.log(email, password);
+  try {
+    const isexist = await User.findOne({ email });
+    if (isexist) {
+      if (!isexist.verified) {
+        const deleteUser = await User.findOneAndDelete({ email });
+       if(deleteUser) return res.json({ error: "User is not registered, please sign-up!" });
+      }
+    }
+    const user = await User.login(email, password, "Admin");
+    const token = createToken(user._id);
+    let oldTokens = user.tokens || [];
+    if (oldTokens.length) {
+      oldTokens = oldTokens.filter((t) => {
+        const timeDiff = (Date.now() - parseInt(t.signedAt)) / 1000;
+        if (timeDiff < 259200) {
+          return t;
+        }
+      });
+    }
+    await User.findByIdAndUpdate(user._id, {
+      tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
+    });
+    res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000 });
+    res.status(200).json({ user: user._id });
+  } catch (err) {
+    console.log(err);
+    const errors = handleErrors(err);
+    res.status(400).json({ errors });
+  }
+};
+
+// module.exports.home_get = async (req, res) => {
+//   res.render("home", {data: []});
+// }
+
+module.exports.adminlogin_get = async (req, res) => {
+  res.render("adminlogin");
+};
+module.exports.firstYear_get = async (req, res) => {
+  try {
+    const data = await upgradeYear.find({ currentYear: "First Year" });
+    // if (data.length === 0)
+    //  return res.json({ message: "No requests for change in YoS" });
+    console.log(data);
+    // res.json(data);
+    res.render("firstyear", {data})
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.secondYear_get = async (req, res) => {
+  try {
+    const data = await upgradeYear.find({ currentYear: "Second Year" });
+    // if (data.length === 0)
+    // return res.json({ message: "No requests for change in YoS" });
+    console.log(data);
+    // res.json(data);
+    res.render("secondyear", {data})
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.thirdYear_get = async (req, res) => {
+  try {
+    const data = await upgradeYear.find({ currentYear: "Third Year" });
+    // if (data.length === 0)
+    //   return res.json({ message: "No requests for change in YoS" });
+    console.log(data);
+    // res.json(data);
+    res.render("thirdyear", {data})
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.finalYear_get = async (req, res) => {
+  try {
+    const data = await upgradeYear.find({ currentYear: "Final Year" });
+    // if (data.length === 0)
+    //   return res.json({ message: "No requests for change in YoS" });
+    console.log(data);
+    // res.json(data);
+    res.render("finalyear", {data})
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.requestUpgrade_post = async (req, res) => {
+  const { prn, currentYear, nextYear } = req.body;
+  const { user } = req;
+  if(!prn || !currentYear || ! nextYear) return res.json({error: "Please provide all details!"});
+
+  try {
+    if(user.phone !== prn || user.yearOfStudy !== currentYear) return res.json({error: "Please provide the correct details!"});
+    const newRecord = new upgradeYear({
+      prn,
+      currentYear,
+      nextYear
+    });
+    await newRecord.save();
+    res.json({message: "Request sent."});
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports.changeYear_post = async (req, res) => {
+  const { prn, changedYear } = req.body;
+  if (!prn || !changedYear)
+    return res.json({ error: "Please provide all details" });
+  try {
+    const data = await User.findOneAndUpdate(
+      { phone: prn },
+      {
+        yearOfStudy: changedYear,
+      }
+    );
+    if (data) {
+      const del = await upgradeYear.findOneAndDelete({ prn });
+      console.log(del);
+      if (del) return res.json({ message: "Success" });
+    } else return res.json({ error: "Error" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.declineRequest_post = async (req, res) => {
+  const { prn } = req.body;
+  if (!prn) return res.json({ error: "Please provide all details" });
+  try {
+    const del = await upgradeYear.findOneAndDelete({ prn });
+    if (del) return res.json({ message: "Success" });
+    else return res.json({ error: "Error" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.adminlogout_get = (req, res) => {
+  res.cookie("jwt", "", { maxAge: 1 });
 };

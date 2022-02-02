@@ -1,0 +1,124 @@
+<%- include('partials/header'); -%>
+
+<div class="container-fluid">
+  <!-- Nav-Bar -->
+  <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarScroll">
+          <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <p class="nav-link buttonhover" onclick="firstYearData()">First Year</p>
+              </li>
+              <li class="nav-item">
+                  <p class="nav-link buttonhover" onclick="secondYearData()">Second Year</p>
+              </li>
+              <li class="nav-item">
+                <p class="nav-link buttonhover" onclick="thirdYearData()">Third Year</p>
+              </li>
+              <li class="nav-item">
+                <p class="nav-link buttonhover" onclick="finalYearData()">Final Year</p>
+              </li>
+              <li class="nav-item">
+                <p class="nav-link buttonhover" onclick="LogOut()">LogOut</p>
+            </li>
+          </ul>
+      </div>
+      </nav>
+</div>
+
+
+<div>
+  <% if(data.length) {%> 
+    <% data.forEach(function(student){ %>
+      <% console.log(student); %> 
+      <table class="table table-striped">
+        <tbody>
+          <tr>
+            <th scope="row">PRN</th>
+            <td><%= student.prn %></td>
+          </tr>
+          <tr>
+            <th scope="row">Current Year</th>
+            <td><i class="fas fa-rupee-sign"></i> <strong><%= student.currentYear %></td>
+          </tr>
+          <tr>
+            <th scope="row">Requested Upgradation</th>
+            <td><%= student.nextYear %></td>
+          </tr>
+        </tbody>
+      </table>
+      <span class="buttongroups">
+        <button onclick="updateYear('<%= student.prn %>', '<%= student.nextYear %>')">Accept</button>
+        <button onclick="declineRequest('<%= student.prn %>')">Reject</button>
+      </span>
+    <% }); %>
+    <% } %>  
+</div>
+
+<%- include('partials/footer'); -%>
+
+<script>
+  const firstYearData = async () => {
+    location.replace("/firstyear");
+  };
+
+  const secondYearData = async () => {
+    location.replace("/secondyear");
+  };
+
+  const thirdYearData = async () => {
+    location.replace("/thirdyear");
+  };
+
+  const finalYearData = async () => {
+    location.replace("/finalyear");
+  };
+
+  const LogOut = async () => {
+    try {
+      const res = await fetch("/adminlogout", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      window.location.href='https://testmate.herokuapp.com/adminlogin'
+    } catch (error) {
+        console.log(error);
+    }
+  }
+
+  const updateYear = async (prn, changedYear) => {
+    try {
+      console.log(prn, changedYear);
+      const res = await fetch("/changeYear", {
+        method: "POST",
+        body: JSON.stringify({ prn, changedYear }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.message) alert(data.message);
+      else window.alert(data.error);
+      location.replace("/firstyear");
+    } catch (error) {
+      console.log(error, "hi4");
+    }
+  };
+
+  const declineRequest = async (prn) => {
+    try {
+      const res = await fetch("/declineRequest", {
+        method: "POST",
+        body: JSON.stringify({ prn }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (data.message) alert(data.message);
+      else alert(data.error);
+      location.replace("/firstyear");
+    } catch (error) {
+      console.log(error, "hi5");
+    }
+  };
+</script>
