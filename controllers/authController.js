@@ -919,5 +919,5 @@ module.exports.declineRequest_post = async (req, res) => {
 };
 
 module.exports.adminlogout_get = (req, res) => {
-  res.cookie("jwt", "", { maxAge: 1 });
+  res.cookie("jwt", "", { expires: new Date(0) });
 };
