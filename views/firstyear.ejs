@@ -32,7 +32,6 @@
 <div>
   <% if(data.length) {%> 
     <% data.forEach(function(student){ %>
-      <% console.log(student); %> 
       <table class="table table-striped">
         <tbody>
           <tr>
@@ -82,9 +81,10 @@
         method: "GET",
         headers: { "Content-Type": "application/json" },
       }).then(()=>
-      window.location.href='/adminlogin').catch((err) => {
+      // window.location.assign('/adminlogin').catch((err) => {
+        location.replace('/adminlogin').catch((err) => {
         console.log(err);
-      });
+      }));
     } catch (error) {
         console.log(error);
     }

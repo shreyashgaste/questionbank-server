@@ -24,7 +24,7 @@ const checkUser = (req, res, next) => {
 
 const checkAdmin = (req, res, next) => {
   const token = req.cookies.jwt;
-
+  console.log(token);
   if (token) {
     jwt.verify(token, process.env.SECRET_KEY, async (err, decodedToken) => {
       if (err) {

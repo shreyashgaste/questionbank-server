@@ -33,7 +33,6 @@
 <div>
   <% if(data.length) {%> 
     <% data.forEach(function(student){ %>
-      <% console.log(student); %> 
       <table class="table table-striped">
         <tbody>
           <tr>
@@ -82,13 +81,14 @@
       const res = await fetch("/adminlogout", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      });
-      window.location.href='/adminlogin'
+      }).then(()=>
+      location.replace('/adminlogin').catch((err) => {
+        console.log(err);
+      }));
     } catch (error) {
         console.log(error);
     }
   }
-
   const updateYear = async (prn, changedYear) => {
     try {
       console.log(prn, changedYear);

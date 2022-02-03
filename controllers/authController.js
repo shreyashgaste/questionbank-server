@@ -919,5 +919,13 @@ module.exports.declineRequest_post = async (req, res) => {
 };
 
 module.exports.adminlogout_get = (req, res) => {
-  res.cookie("jwt", "", { expires: Date.now() });
+  // res.cookie("jwt", "", { maxAge: 1 });
+  // res.cookie('jwt', " ", {expires: Date.now(0)});
+  res.cookie("jwt", '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    expires: new Date(0)
+});
+res.status(200).send({ message: "Logged Out" });
 };
