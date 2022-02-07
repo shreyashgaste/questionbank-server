@@ -1158,7 +1158,24 @@ exports.generatePasswordResetTemplate = (url) => {
         </tr>
       </tbody>
     </table>
+    <table style="font-family:verdana,geneva;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
+      <tbody>
+        <tr>
+          <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:verdana,geneva;" align="left">
+            
+      <div style="line-height: 140%; text-align: left; word-wrap: break-word;">
+        <p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+    <p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+    <p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+    <p style="font-size: 14px; line-height: 140%;">This request token will automatically expires within 10 minutes.</p>
+    <p style="font-size: 14px; line-height: 140%;">Thanks!</p>
+    <p style="font-size: 14px; line-height: 140%;">Team TestMate</p>
+      </div>
     
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <table style="font-family:verdana,geneva;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
       <tbody>
         <tr>
@@ -1193,6 +1210,7 @@ exports.generatePasswordResetTemplate = (url) => {
     <div class="u-col u-col-100" style="max-width: 320px;min-width: 550px;display: table-cell;vertical-align: top;">
       <div style="width: 100% !important;">
       <!--[if (!mso)&(!IE)]><!--><div style="padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;"><!--<![endif]-->
+      
       
     <table style="font-family:verdana,geneva;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
       <tbody>
