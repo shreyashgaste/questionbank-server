@@ -10,6 +10,7 @@ const {
   generateEmailTemplate,
   plainEmailTemplate,
   generatePasswordResetTemplate,
+  awsConfiguration,
 } = require("../utils/mail");
 const VerificationToken = require("../models/verificationToken");
 const ResetToken = require("../models/resetToken");
@@ -19,6 +20,7 @@ const { createRandomBytes } = require("../utils/commonHelper");
 const Quiz = require("../models/Quiz");
 const Result = require("../models/Result");
 const upgradeYear = require("../models/upgradeYear");
+const AWS = require("aws-sdk");
 
 // handle errors
 const handleErrors = (err) => {
@@ -90,12 +92,39 @@ module.exports.signup_post = async (req, res) => {
     });
     await verificationToken.save();
     await user.save();
-    mailTransport().sendMail({
-      from: process.env.USER,
-      to: user.email,
-      subject: "Verify your email account",
-      html: generateEmailTemplate(OTP, `${user.name}`),
-    });
+    // mailTransport().sendMail({
+    //   from: process.env.USER,
+    //   to: user.email,
+    //   subject: "Verify your email account",
+    //   html: generateEmailTemplate(OTP, `${user.name}`),
+    // });
+    awsConfiguration();
+    const ses = new AWS.SES({ region: "ap-south-1" });
+    const params = {
+      Destination: { ToAddresses: [user.email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: generateEmailTemplate(OTP, `${user.name}`),
+          },
+        },
+        Subject: {
+          Charset: "UTF-8",
+          Data: "Verify your email account",
+        },
+      },
+      Source: process.env.USER,
+    };
+    ses
+      .sendEmail(params)
+      .promise()
+      .then((val) => {
+        console.log(val);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     res.status(201).json({ message: "User registered succesfully", user });
   } catch (err) {
     const errors = handleErrors(err);
@@ -129,16 +158,42 @@ module.exports.verifyEmail_post = async (req, res) => {
     await VerificationToken.findByIdAndDelete(token._id);
     await user.save();
 
-    mailTransport().sendMail({
-      from: process.env.USER,
-      to: user.email,
-      subject: "Welcome Email",
-      html: plainEmailTemplate(
-        `${user.name}`,
-        "Email Verified Successfully. Thanks for connecting with us!"
-      ),
-    });
-
+    // mailTransport().sendMail({
+    //   from: process.env.USER,
+    //   to: user.email,
+    //   subject: "Welcome Email",
+    // html: plainEmailTemplate(
+    //   `${user.name}`,
+    //   "Email Verified Successfully. Thanks for connecting with us!"
+    // ),
+    // });
+    awsConfiguration();
+    const ses = new AWS.SES({ region: "ap-south-1" });
+    const params = {
+      Destination: { ToAddresses: [user.email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: plainEmailTemplate(
+              `${user.name}`,
+              "Email Verified Successfully. Thanks for connecting with us!"
+            ),
+          },
+        },
+        Subject: { Charset: "UTF-8", Data: "Welcome Email" },
+      },
+      Source: process.env.USER,
+    };
+    ses
+      .sendEmail(params)
+      .promise()
+      .then((val) => {
+        console.log(val);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     res.json({ success: true, message: "Your email is verified.", user });
   } catch (error) {
     res.json({ error: "Server traffic error!" });
@@ -170,16 +225,45 @@ module.exports.forgotPassword_post = async (req, res) => {
     const resetToken = new ResetToken({ owner: user._id, token: randombytes });
     await resetToken.save();
 
-    mailTransport().sendMail({
-      from: process.env.USER,
-      to: user.email,
-      subject: "Password Reset",
-      html: generatePasswordResetTemplate(
-        `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
-        // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
-      ),
-    });
-
+    // mailTransport().sendMail({
+    //   from: process.env.USER,
+    //   to: user.email,
+    //   subject: "Password Reset",
+    // html: generatePasswordResetTemplate(
+    //   `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
+    //   // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
+    // ),
+    // });
+    awsConfiguration();
+    const ses = new AWS.SES({ region: "ap-south-1" });
+    const params = {
+      Destination: { ToAddresses: [user.email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: generatePasswordResetTemplate(
+              `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
+              // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
+            ),
+          },
+        },
+        Subject: {
+          Charset: "UTF-8",
+          Data: "Password Reset",
+        },
+      },
+      Source: process.env.USER,
+    };
+    ses
+      .sendEmail(params)
+      .promise()
+      .then((val) => {
+        console.log(val);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     res.json({
       success: true,
       message: "Password reset link is sent to your email.",
@@ -208,15 +292,43 @@ module.exports.resetPassword_post = async (req, res) => {
 
     await ResetToken.findOneAndDelete({ owner: user._id });
 
-    mailTransport().sendMail({
-      from: process.env.USER,
-      to: user.email,
-      subject: "Password Reset Success",
-      html: plainEmailTemplate(
-        `${user.name}`,
-        "Password Reset Successfully. Now you can login to your account with your new password!"
-      ),
-    });
+    // mailTransport().sendMail({
+    //   from: process.env.USER,
+    //   to: user.email,
+    //   subject: "Password Reset Success",
+    //   html: plainEmailTemplate(
+    //     `${user.name}`,
+    //     "Password Reset Successfully. Now you can login to your account with your new password!"
+    //   ),
+    // });
+
+    awsConfiguration();
+    const ses = new AWS.SES({ apiVersion: "2010-12-01" });
+    const params = {
+      Destination: user.email,
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: plainEmailTemplate(
+              `${user.name}`,
+              "Password Reset Successfully. Now you can login to your account with your new password!"
+            ),
+          },
+        },
+        Subject: "Password Reset Success",
+      },
+      Source: process.env.USER,
+    };
+    ses
+      .sendEmail(params)
+      .promise()
+      .then((val) => {
+        console.log(val);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     res.json({ success: true, message: "Password reset successfully!" });
   } catch (error) {
@@ -241,7 +353,8 @@ module.exports.login_post = async (req, res) => {
     if (isexist) {
       if (!isexist.verified) {
         const deleteUser = await User.findOneAndDelete({ email });
-        if(deleteUser) return res.json({ error: "User is not registered, please sign-up!" });
+        if (deleteUser)
+          return res.json({ error: "User is not registered, please sign-up!" });
       }
     }
 
@@ -750,7 +863,8 @@ module.exports.getresult_post = async (req, res) => {
 
 module.exports.logout_post = async (req, res) => {
   const { email } = req.body;
-  if(!email) return res.json({ success: false, message: "Authorization fails" });
+  if (!email)
+    return res.json({ success: false, message: "Authorization fails" });
   if (req.headers && req.headers.authorization) {
     const token = req.headers.authorization.split(" ")[1];
     console.log(token);
@@ -758,8 +872,9 @@ module.exports.logout_post = async (req, res) => {
       return res.json({ success: false, message: "Authorization fails" });
     }
     try {
-      const user = await User.findOne({email});
-      if(!user) return res.json({ success: false, message: "Authorization fails" });
+      const user = await User.findOne({ email });
+      if (!user)
+        return res.json({ success: false, message: "Authorization fails" });
 
       const tokens = user.tokens;
       // console.log(tokens);
@@ -767,7 +882,7 @@ module.exports.logout_post = async (req, res) => {
       await User.findByIdAndUpdate(user._id, { tokens: newTokens });
       res.json({ success: true, message: "Signed-out successfully!" });
     } catch (error) {
-      console.log(error,"hi");
+      console.log(error, "hi");
       res.json({ message: "Server traffic error!" });
     }
   }
@@ -781,7 +896,8 @@ module.exports.adminlogin_post = async (req, res) => {
     if (isexist) {
       if (!isexist.verified) {
         const deleteUser = await User.findOneAndDelete({ email });
-       if(deleteUser) return res.json({ error: "User is not registered, please sign-up!" });
+        if (deleteUser)
+          return res.json({ error: "User is not registered, please sign-up!" });
       }
     }
     const user = await User.login(email, password, "Admin");
@@ -821,7 +937,7 @@ module.exports.firstYear_get = async (req, res) => {
     //  return res.json({ message: "No requests for change in YoS" });
     console.log(data);
     // res.json(data);
-    res.render("firstyear", {data})
+    res.render("firstyear", { data });
   } catch (error) {
     console.log(error);
   }
@@ -834,7 +950,7 @@ module.exports.secondYear_get = async (req, res) => {
     // return res.json({ message: "No requests for change in YoS" });
     console.log(data);
     // res.json(data);
-    res.render("secondyear", {data})
+    res.render("secondyear", { data });
   } catch (error) {
     console.log(error);
   }
@@ -847,7 +963,7 @@ module.exports.thirdYear_get = async (req, res) => {
     //   return res.json({ message: "No requests for change in YoS" });
     console.log(data);
     // res.json(data);
-    res.render("thirdyear", {data})
+    res.render("thirdyear", { data });
   } catch (error) {
     console.log(error);
   }
@@ -860,7 +976,7 @@ module.exports.finalYear_get = async (req, res) => {
     //   return res.json({ message: "No requests for change in YoS" });
     console.log(data);
     // res.json(data);
-    res.render("finalyear", {data})
+    res.render("finalyear", { data });
   } catch (error) {
     console.log(error);
   }
@@ -869,21 +985,23 @@ module.exports.finalYear_get = async (req, res) => {
 module.exports.requestUpgrade_post = async (req, res) => {
   const { prn, currentYear, nextYear } = req.body;
   const { user } = req;
-  if(!prn || !currentYear || ! nextYear) return res.json({error: "Please provide all details!"});
+  if (!prn || !currentYear || !nextYear)
+    return res.json({ error: "Please provide all details!" });
 
   try {
-    if(user.phone !== prn || user.yearOfStudy !== currentYear) return res.json({error: "Please provide the correct details!"});
+    if (user.phone !== prn || user.yearOfStudy !== currentYear)
+      return res.json({ error: "Please provide the correct details!" });
     const newRecord = new upgradeYear({
       prn,
       currentYear,
-      nextYear
+      nextYear,
     });
     await newRecord.save();
-    res.json({message: "Request sent."});
+    res.json({ message: "Request sent." });
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 module.exports.changeYear_post = async (req, res) => {
   const { prn, changedYear } = req.body;
@@ -921,11 +1039,11 @@ module.exports.declineRequest_post = async (req, res) => {
 module.exports.adminlogout_get = (req, res) => {
   // res.cookie("jwt", "", { maxAge: 1 });
   // res.cookie('jwt', " ", {expires: Date.now(0)});
-  res.cookie("jwt", '', {
+  res.cookie("jwt", "", {
     httpOnly: true,
     secure: true,
-    sameSite: 'none',
-    expires: new Date(0)
-});
-res.status(200).send({ message: "Logged Out" });
+    sameSite: "none",
+    expires: new Date(0),
+  });
+  res.status(200).send({ message: "Logged Out" });
 };

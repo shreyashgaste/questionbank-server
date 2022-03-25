@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
 const nodeMailgun = require("nodemailer-mailgun-transport");
+const AWS = require("aws-sdk");
 
 exports.generateOTP = () => {
   let otp = "";
@@ -9,6 +10,14 @@ exports.generateOTP = () => {
     otp = otp + randVal;
   }
   return otp;
+};
+
+exports.awsConfiguration = () => {
+  AWS.config.update({
+    accessKeyId: process.env.AWS_accessKeyId,
+    secretAccessKey: process.env.AWS_secretAccessKey,
+    region: process.env.AWS_region,
+  });
 };
 
 var auth = {
@@ -341,7 +350,23 @@ exports.generateEmailTemplate = (code, name) => {
       </tr>
     </tbody>
   </table>
-  
+  <table style="font-family:verdana,geneva;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
+  <tbody>
+    <tr>
+      <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:verdana,geneva;" align="left">
+        
+  <div style="line-height: 140%; text-align: left; word-wrap: break-word;">
+    <p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+<p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+<p style="font-size: 14px; line-height: 140%;">&nbsp;</p>
+<p style="font-size: 14px; line-height: 140%;">Thanks!</p>
+<p style="font-size: 14px; line-height: 140%;">Team TestMate</p>
+  </div>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
   <table style="font-family:verdana,geneva;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
     <tbody>
       <tr>
