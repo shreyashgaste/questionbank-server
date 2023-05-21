@@ -243,8 +243,8 @@ module.exports.forgotPassword_post = async (req, res) => {
           Html: {
             Charset: "UTF-8",
             Data: generatePasswordResetTemplate(
-              `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
-              // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
+              // `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
+              `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
             ),
           },
         },
@@ -1047,3 +1047,13 @@ module.exports.adminlogout_get = (req, res) => {
   });
   res.status(200).send({ message: "Logged Out" });
 };
+module.exports.getParkingSlotsUnderAuthority_post = async(req, res) => {
+  console.log(req.body);
+  const { _id } = req.body;
+  try {
+    const data = await Parkingslot.find({owner: _id});
+    console.log(data);
+  } catch (error) {
+    console.log(error)
+  }
+}
