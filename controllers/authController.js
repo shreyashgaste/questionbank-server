@@ -244,7 +244,8 @@ module.exports.forgotPassword_post = async (req, res) => {
             Charset: "UTF-8",
             Data: generatePasswordResetTemplate(
               // `https://testmate.herokuapp.com/reset-password?token=${randombytes}&id=${user._id}`
-              `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
+              `https://testmate.onrender.com/reset-password?token=${randombytes}&id=${user._id}`
+              // `http://localhost:5000/reset-password?token=${randombytes}&id=${user._id}`
             ),
           },
         },
