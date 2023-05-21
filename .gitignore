@@ -10,7 +10,11 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-
+myKey
+myKey.pub
+myNewKey
+myNewKey.pub
+nano.save
 
 # macOS
 .DS_Store
