@@ -1047,13 +1047,3 @@ module.exports.adminlogout_get = (req, res) => {
   });
   res.status(200).send({ message: "Logged Out" });
 };
-module.exports.getParkingSlotsUnderAuthority_post = async(req, res) => {
-  console.log(req.body);
-  const { _id } = req.body;
-  try {
-    const data = await Parkingslot.find({owner: _id});
-    console.log(data);
-  } catch (error) {
-    console.log(error)
-  }
-}
